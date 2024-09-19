@@ -100,4 +100,18 @@ then setting.json()
 then : 
 npm install --save-dev eslint-config-prettier
 
+
+
+
+
+
+
+
+
+
+-------------------------------
+to direct use typescript file : 
+npm i ts-node-dev
+npx ts-node-dev --respawn --transpile-only server.ts
+
 */
