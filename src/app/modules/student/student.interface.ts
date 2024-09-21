@@ -2,16 +2,16 @@ import { Schema, model, connect } from 'mongoose';
 
 export type Guardian = {
   fatherName: string;
-  fatherOccupation: string;
   fatherContactNo: string;
+  fatherOccupation: string;
   motherName: string;
-  motherOccupation: string;
   motherContactNo: string;
+  motherOccupation: string;
 };
 
 export type UserName = {
   firstName: string;
-  middleName: string;
+  middleName?: string;
   lastName: string;
 };
 
@@ -25,16 +25,16 @@ export type LocalGuardian = {
 export type Student = {
   id: string;
   name: UserName;
-  gender: 'male' | 'female';
-  dateOfBirth: string;
+  gender: 'male' | 'female' | 'other';
+  dateOfBirth?: string;
   email: string;
   contactNo: string;
-  emergencyContactNo: string;
   bloodGroup?: 'A+' | 'A-' | 'B+' | 'B-' | 'AB+' | 'AB-' | 'O+' | 'O-';
-  parmanentAddress: string;
+  emergencyContactNo: string;
   presentAddress: string;
+  parmanentAddress: string;
   guardian: Guardian;
   localGuardian: LocalGuardian;
-  profileImg?: string;
-  isActive: 'Active' | 'blocked';
+  profileImg?: string | undefined;
+  isActive: 'Active' | 'inActive';
 };

@@ -115,3 +115,32 @@ npm i ts-node-dev
 npx ts-node-dev --respawn --transpile-only server.ts
 
 */
+
+/*
+--------------------------------------
+validation : 
+
+
+npm package : 
+
+npm i validator
+npm i @types/validator
+
+{
+https://github.com/validatorjs/validator.js
+}
+{import validator from 'validator';}
+
+validate: {
+      validator: (value: string) => validator.isAlpha(value),
+      message: '{VALUE} is not valid',
+},
+
+joi package :
+---------------------
+npm i joi
+{
+    https://joi.dev/api/?v=17.13.3
+}
+
+*/
