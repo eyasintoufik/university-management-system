@@ -1,5 +1,7 @@
 import { model, Schema } from 'mongoose';
 import { TUser } from './user.interface';
+import bcrypt from 'bcrypt';
+import config from '../../config';
 
 const userSchema = new Schema<TUser>(
   {
@@ -35,5 +37,25 @@ const userSchema = new Schema<TUser>(
     timestamps: true,
   },
 );
+
+//pre save middleware / hook : will work on crete(), save()
+userSchema.pre('save', async function (next) {
+  // console.log(this, 'pre hook : we will save the data');
+  const user = this;
+  //hashing password and save into DB:
+  user.password = await bcrypt.hash(
+    user.password,
+    Number(config.bycypt_salt_rounds),
+  );
+  next();
+});
+
+//post save middleware /
+
+userSchema.post('save', function (doc, next) {
+  doc.password = '';
+  console.log(this, 'post hook : we saved our data');
+  next();
+});
 
 export const User = model<TUser>('User', userSchema);

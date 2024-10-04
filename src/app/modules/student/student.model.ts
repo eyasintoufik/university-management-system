@@ -1,6 +1,5 @@
 import { Schema, model, connect } from 'mongoose';
 import validator from 'validator';
-import bcrypt from 'bcrypt';
 
 import {
   Guardian,
@@ -50,7 +49,6 @@ const studentSchema = new Schema<Student>(
       unique: true,
       ref: 'User',
     },
-    password: { type: String, required: true },
     name: {
       type: userNameSchema,
       required: true,
@@ -95,25 +93,6 @@ const studentSchema = new Schema<Student>(
 
 studentSchema.virtual('fullname').get(function () {
   return `${this.name.firstName} ${this.name.middleName}  ${this.name.lastName}`;
-});
-
-//pre save middleware / hook : will work on crete(), save()
-studentSchema.pre('save', async function (next) {
-  // console.log(this, 'pre hook : we will save the data');
-  const user = this;
-  //hashing password and save into DB:
-  user.password = await bcrypt.hash(
-    user.password,
-    Number(config.bycypt_salt_rounds),
-  );
-  next();
-});
-//post save middleware /
-
-studentSchema.post('save', function (doc, next) {
-  doc.password = '';
-  console.log(this, 'post hook : we saved our data');
-  next();
 });
 
 // query middleware :

@@ -1,9 +1,13 @@
-import { Request, Response } from 'express';
+import { NextFunction, Request, Response } from 'express';
 import { studentValidationSchema } from '../student/student.validation';
 import { UserServices } from './user.service';
 import { UserValidation } from './user.validation';
 
-const createStudent = async (req: Request, res: Response) => {
+const createStudent = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
   try {
     //creating data validation using zod :
 
@@ -32,12 +36,7 @@ const createStudent = async (req: Request, res: Response) => {
       data: result,
     });
   } catch (err) {
-    console.log(err);
-    res.status(500).json({
-      success: false,
-      message: 'An error occurred while creating the student',
-      error: err,
-    });
+    next(err);
   }
 };
 

@@ -1,8 +1,9 @@
 import cors from 'cors';
-import express, { Application, Request, Response } from 'express';
+import express, { Application, NextFunction, Request, Response } from 'express';
 import { studentRoutes } from './app/modules/student/student.route';
 import { StudentController } from './app/modules/student/student.controller';
 import { userRoutes } from './app/modules/user/user.route';
+import globalErrorHandler from './app/middlewares/globalErrorhandler';
 
 const app: Application = express();
 
@@ -23,4 +24,5 @@ const getAController = (req: Request, res: Response) => {
 
 app.get('/', getAController);
 
+app.use(globalErrorHandler);
 export default app;
