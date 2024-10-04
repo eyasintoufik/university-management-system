@@ -1,5 +1,6 @@
 import { Schema, model, connect } from 'mongoose';
 import validator from 'validator';
+import bcrypt from 'bcrypt';
 
 import {
   Guardian,
@@ -7,20 +8,12 @@ import {
   Student,
   UserName,
 } from './student.interface';
+import config from '../../config';
 
 const userNameSchema = new Schema<UserName>({
   firstName: {
     type: String,
-    required: [true, 'First name is required'],
-    trim: true, // space remove kore dey;;
-    maxlength: [20, 'first name can not be more than 20 characters '],
-    //custom validation :
-    validate: {
-      validator: function (value: string) {
-        const firstNameStr = value.charAt(0).toUpperCase() + value.slice(1);
-        return firstNameStr === value;
-      },
-    },
+    required: true,
   },
   middleName: {
     type: String,
@@ -28,12 +21,7 @@ const userNameSchema = new Schema<UserName>({
   },
   lastName: {
     type: String,
-    required: [true, 'Last Name is required'],
-    trim: true,
-    validate: {
-      validator: (value: string) => validator.isAlpha(value),
-      message: '{VALUE} is not valid',
-    },
+    required: true,
   },
 });
 
@@ -53,44 +41,97 @@ const localGuardianSchema = new Schema<LocalGuardian>({
   address: { type: String, required: true },
 });
 
-const studentSchema = new Schema<Student>({
-  id: { type: String, required: true },
-  name: {
-    type: userNameSchema,
-    required: true,
-  },
-  gender: {
-    type: String,
-    enum: {
-      values: ['male', 'female', 'other'],
-      message: '{VALUE} is not valid ',
+const studentSchema = new Schema<Student>(
+  {
+    id: { type: String, required: [true, 'ID is required'], unique: true },
+    user: {
+      type: Schema.Types.ObjectId,
+      required: [true, 'UserId is required'],
+      unique: true,
+      ref: 'User',
     },
-    required: true,
+    password: { type: String, required: true },
+    name: {
+      type: userNameSchema,
+      required: true,
+    },
+    gender: {
+      type: String,
+      enum: {
+        values: ['male', 'female', 'other'],
+      },
+      required: true,
+    },
+    dateOfBirth: { type: String },
+    email: { type: String, required: true, unique: true },
+    contactNo: { type: String, required: true },
+    emergencyContactNo: { type: String, required: true },
+    bloodGroup: {
+      type: String,
+      enum: ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'],
+    },
+    presentAddress: { type: String, required: true },
+    parmanentAddress: { type: String, required: true },
+    guardian: {
+      type: guardianSchema,
+      required: true,
+    },
+    localGuardian: {
+      type: localGuardianSchema,
+      required: true,
+    },
+    profileImg: { type: String },
+    isDeleted: {
+      type: Boolean,
+      default: false,
+    },
   },
-  dateOfBirth: { type: String },
-  email: { type: String, required: true, unique: true },
-  contactNo: { type: String, required: true },
-  emergencyContactNo: { type: String, required: true },
-  bloodGroup: {
-    type: String,
-    enum: ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'],
+  {
+    toJSON: {
+      virtuals: true,
+    },
   },
-  presentAddress: { type: String, required: true },
-  parmanentAddress: { type: String, required: true },
-  guardian: {
-    type: guardianSchema,
-    required: true,
-  },
-  localGuardian: {
-    type: localGuardianSchema,
-    required: true,
-  },
-  profileImg: { type: String },
-  isActive: {
-    type: String,
-    enum: ['Active', 'blocked'],
-    default: 'Active',
-  },
+);
+
+studentSchema.virtual('fullname').get(function () {
+  return `${this.name.firstName} ${this.name.middleName}  ${this.name.lastName}`;
+});
+
+//pre save middleware / hook : will work on crete(), save()
+studentSchema.pre('save', async function (next) {
+  // console.log(this, 'pre hook : we will save the data');
+  const user = this;
+  //hashing password and save into DB:
+  user.password = await bcrypt.hash(
+    user.password,
+    Number(config.bycypt_salt_rounds),
+  );
+  next();
+});
+//post save middleware /
+
+studentSchema.post('save', function (doc, next) {
+  doc.password = '';
+  console.log(this, 'post hook : we saved our data');
+  next();
+});
+
+// query middleware :
+studentSchema.pre('find', function (next) {
+  // console.log(this);
+  this.find({ isDeleted: { $ne: true } });
+  next();
+});
+// query middleware :
+studentSchema.pre('findOne', function (next) {
+  // console.log(this);
+  this.find({ isDeleted: { $ne: true } });
+  next();
+});
+studentSchema.pre('aggregate', function (next) {
+  // console.log(this);
+  this.pipeline().unshift({ $match: { isDeleted: { $ne: true } } });
+  next();
 });
 
 export const StudentModel = model<Student>('Student', studentSchema);

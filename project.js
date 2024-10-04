@@ -144,3 +144,11 @@ npm i joi
 }
 
 */
+
+/*
+{
+bcrypt for password validation : 
+npm i bcrypt
+npm i -D --save @types/bcrypt // dependancy er jonno; 
+}
+*/

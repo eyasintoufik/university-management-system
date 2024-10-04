@@ -3,42 +3,8 @@ import { StudentServices } from './student.service';
 import Joi from 'joi';
 import { z } from 'zod';
 import { Guardian, LocalGuardian, UserName } from './student.interface';
-import studentValidationSchema from './student.validation';
+import { studentValidationSchema } from './student.validation';
 
-const createStudent = async (req: Request, res: Response) => {
-  try {
-    //creating data validation using zod :
-
-    const { student: studentData } = req.body;
-
-    // data validation using joi :
-    // const { error, value } = studentValidationSchema.validate(studentData);
-
-    // data validation using zod :
-    const zodparsedData = studentValidationSchema.parse(studentData);
-
-    // if (error) {
-    //   res.status(500).json({
-    //     success: false,
-    //     message: 'An error occurred while creating the student',
-    //     error: error.details,
-    //   });
-    // }
-    const result = await StudentServices.createStudentIntoDB(zodparsedData);
-    res.status(200).json({
-      success: true,
-      message: 'Student is created successfully',
-      data: result,
-    });
-  } catch (err) {
-    console.log(err);
-    res.status(500).json({
-      success: false,
-      message: 'An error occurred while creating the student',
-      error: err,
-    });
-  }
-};
 const getAllStudent = async (req: Request, res: Response) => {
   try {
     const result = await StudentServices.getAllStudentFromDB();
@@ -75,8 +41,26 @@ const getSingleStudent = async (req: Request, res: Response) => {
   }
 };
 
+const deleteSingleStudent = async (req: Request, res: Response) => {
+  try {
+    const { studentId } = req.params;
+    const result = await StudentServices.deleteStudentFromDB(studentId);
+    res.status(200).json({
+      success: true,
+      message: 'Student is deleted successfully',
+      data: result,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'An error occurred while deleting students',
+      error: error,
+    });
+  }
+};
+
 export const StudentController = {
-  createStudent,
   getAllStudent,
   getSingleStudent,
+  deleteSingleStudent,
 };
